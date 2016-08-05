@@ -81,6 +81,9 @@ public class MyUI extends UI {
 		final ExampleDTO pojo = new ExampleDTO();
 		
 		final BeanItem<ExampleDTO> beanItem = new BeanItem<ExampleDTO>(pojo);
+		// both BeanFieldGroup and FieldGroup seem to work in this case, BeanFieldGroup has some helper methods
+		//final FieldGroup binder = new FieldGroup(beanItem);
+		
 		final BeanFieldGroup<ExampleDTO> binder = new BeanFieldGroup<ExampleDTO>(ExampleDTO.class);
 		binder.setItemDataSource(beanItem);
 		
@@ -97,6 +100,9 @@ public class MyUI extends UI {
 				pojo.setMyName("My name - "+sf.getValue());
 				pojo.setAddress("My address "+sf.getValue());
 				binder.setItemDataSource(beanItem);
+				
+				// also this works with BeanFieldGroup
+				//binder.setItemDataSource(pojo);
 			}
 		});
 		
