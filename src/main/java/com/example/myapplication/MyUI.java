@@ -9,9 +9,9 @@ import com.vaadin.annotations.Widgetset;
 import com.vaadin.data.Property.ValueChangeEvent;
 import com.vaadin.data.Property.ValueChangeListener;
 import com.vaadin.data.fieldgroup.BeanFieldGroup;
-import com.vaadin.data.fieldgroup.FieldGroup;
 import com.vaadin.data.fieldgroup.PropertyId;
 import com.vaadin.data.util.BeanItem;
+import com.vaadin.data.util.BeanItemContainer;
 import com.vaadin.data.util.MethodProperty;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinServlet;
@@ -22,6 +22,7 @@ import com.vaadin.ui.Component;
 import com.vaadin.ui.FormLayout;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Label;
+import com.vaadin.ui.Table;
 import com.vaadin.ui.TextField;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.VerticalLayout;
@@ -46,13 +47,14 @@ public class MyUI extends UI {
 		layout.addComponents(createMethodPropertyExample());
 		layout.addComponent(createFieldGroupExample());
 		layout.addComponent(createPushExample());
+		layout.addComponent(createTableExample());
 		layout.setMargin(true);
 		layout.setSpacing(true);
 		setContent(layout);
 	}
 
 	private Component createMethodPropertyExample() {
-		final ExampleDTO pojo = new ExampleDTO();
+		final ExampleDTO pojo = new ExampleDTO("-","-");
 		// bind to setMyName() and getMyName()
 		MethodProperty<String> myProperty = new MethodProperty<>(pojo, "myName");
 
@@ -78,7 +80,7 @@ public class MyUI extends UI {
 	}
 	
 	private Component createFieldGroupExample() {
-		final ExampleDTO pojo = new ExampleDTO();
+		final ExampleDTO pojo = new ExampleDTO("-", "-");
 		
 		final BeanItem<ExampleDTO> beanItem = new BeanItem<ExampleDTO>(pojo);
 		// both BeanFieldGroup and FieldGroup seem to work in this case, BeanFieldGroup has some helper methods
@@ -99,6 +101,9 @@ public class MyUI extends UI {
 			public void valueChange(ValueChangeEvent event) {
 				pojo.setMyName("My name - "+sf.getValue());
 				pojo.setAddress("My address "+sf.getValue());
+				
+				// how to set property readOnly if the suggestion value is "Item 2"
+				beanItem.getItemProperty("address").setReadOnly("Item 2".equals(sf.getValue()));
 				binder.setItemDataSource(beanItem);
 				
 				// also this works with BeanFieldGroup
@@ -164,9 +169,46 @@ public class MyUI extends UI {
 		return horizontalLayout;
 	}
 
+
+	private Component createTableExample() {
+		BeanItemContainer<ExampleDTO> beans =
+	            new BeanItemContainer<ExampleDTO>(ExampleDTO.class);
+		beans.addBean(new ExampleDTO("adsad","asdasda a1"));
+		beans.addBean(new ExampleDTO("qweqw","qweqweqw b10"));
+		
+		
+		Button b = new Button("Add item to table");
+		b.addClickListener(new Button.ClickListener() {
+			@Override
+			public void buttonClick(ClickEvent event) {
+				beans.addBean(new ExampleDTO("rwerwerwerwer","ewrwe d2"));
+			}
+		});
+		Button b2 = new Button("Remove first item from table");
+		b2.addClickListener(new Button.ClickListener() {
+			@Override
+			public void buttonClick(ClickEvent event) {
+				beans.removeItem(beans.getIdByIndex(0));
+			}
+		});
+		
+		Table t = new Table();
+		t.setContainerDataSource(beans);
+
+		HorizontalLayout horizontalLayout = new HorizontalLayout(new Label("Table with BeanItemContainer"), b, b2,
+				t);
+		horizontalLayout.setSpacing(true);
+		return horizontalLayout;
+	}
+	
 	public class ExampleDTO {
 		private String myName;
 		private String address;
+
+		public ExampleDTO(String myName, String address) {
+			this.myName = myName;
+			this.address = address;
+		}
 
 		public String getMyName() {
 			return myName;
